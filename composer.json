@@ -1,0 +1,28 @@
+{
+    "name": "rutatiina/goods-received",
+    "description": "Package to Manage Goods Received",
+    "type": "laravel",
+    "authors": [
+        {
+            "name": "Rutatiina Gilbert",
+            "email": "rutatiina@ruginem.org"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "rutatiina/contact": "dev-main",
+        "rutatiina/item": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rutatiina\\GoodsReceived\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rutatiina\\GoodsReceived\\GoodsReceivedServiceProvider"
+            ]
+        }
+    }
+}
