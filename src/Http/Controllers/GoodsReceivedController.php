@@ -2,30 +2,29 @@
 
 namespace Rutatiina\GoodsReceived\Http\Controllers;
 
-use Rutatiina\GoodsReturned\Models\GoodsReturnedSetting;
-use Rutatiina\GoodsReturned\Models\GoodsReturned;
-use URL;
 use PDF;
-use Illuminate\Support\Facades\Auth;
+use URL;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Request as FacadesRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
-use Rutatiina\GoodsReceived\Models\GoodsReceived;
-use Rutatiina\FinancialAccounting\Classes\Transaction;
-use Rutatiina\FinancialAccounting\Models\Entree;
-use Rutatiina\Contact\Traits\ContactTrait;
-use Rutatiina\FinancialAccounting\Traits\FinancialAccountingTrait;
 use Yajra\DataTables\Facades\DataTables;
-
-use Rutatiina\GoodsReceived\Classes\Store as TxnStore;
-use Rutatiina\GoodsReceived\Classes\Approve as TxnApprove;
-use Rutatiina\GoodsReceived\Classes\Read as TxnRead;
-use Rutatiina\GoodsReceived\Classes\Copy as TxnCopy;
-use Rutatiina\GoodsReceived\Classes\Number as TxnNumber;
+use Rutatiina\Contact\Traits\ContactTrait;
+use Rutatiina\FinancialAccounting\Models\Entree;
+use Rutatiina\GoodsReceived\Models\GoodsReceived;
 use Rutatiina\GoodsReceived\Traits\Item as TxnItem;
+use Rutatiina\GoodsReceived\Classes\Copy as TxnCopy;
 use Rutatiina\GoodsReceived\Classes\Edit as TxnEdit;
+
+use Rutatiina\GoodsReceived\Classes\Read as TxnRead;
+use Rutatiina\FinancialAccounting\Classes\Transaction;
+use Rutatiina\GoodsReceived\Classes\Store as TxnStore;
+use Rutatiina\GoodsReceived\Classes\Number as TxnNumber;
 use Rutatiina\GoodsReceived\Classes\Update as TxnUpdate;
+use Illuminate\Support\Facades\Request as FacadesRequest;
+use Rutatiina\GoodsReceived\Classes\Approve as TxnApprove;
+use Rutatiina\GoodsReceived\Services\GoodsReceivedService;
+use Rutatiina\FinancialAccounting\Traits\FinancialAccountingTrait;
 
 class GoodsReceivedController extends Controller
 {
@@ -64,7 +63,7 @@ class GoodsReceivedController extends Controller
     private function nextNumber()
     {
         $txn = GoodsReceived::latest()->first();
-        $settings = GoodsReturnedSetting::first();
+        $settings = GoodsReceivedService::settings();
 
         return $settings->number_prefix . (str_pad((optional($txn)->number + 1), $settings->minimum_number_length, "0", STR_PAD_LEFT)) . $settings->number_postfix;
     }
