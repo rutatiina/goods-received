@@ -25,11 +25,10 @@ class GoodsReceivedService
     {
         return GoodsReceivedSetting::firstOrCreate([
             'tenant_id' => session('tenant_id'),
-            'document_name' => 'Goods Delivered Note',
+            'document_name' => 'Goods Received Note',
             'document_type' => 'inventory',
-            //since this is not a financial accounting entry, there is no need for the double entry details
-            //'debit_financial_account_code' => 720100, //Cost of Sales
-            //'credit_financial_account_code' => 130500, //Other Inventory [value was 6 before changing to codes]
+            //'debit_financial_account_code' => 130500, //Other Inventory
+            //'credit_financial_account_code' => 0,
         ]);
     }
 
@@ -134,8 +133,7 @@ class GoodsReceivedService
             //update the status of the txn
             if ($approval)
             {
-                $Txn->status = $data['status'];
-                $Txn->balances_where_updated = 1;
+                $Txn->status = 'approved';
                 $Txn->save();
             }
 
@@ -148,20 +146,20 @@ class GoodsReceivedService
         {
             DB::connection('tenant')->rollBack();
 
-            Log::critical('Fatal Internal Error: Failed to save Goods Delivered to database');
+            Log::critical('Fatal Internal Error: Failed to save Goods Received to database');
             Log::critical($e);
 
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'Error: Failed to save Goods Delivered to database.';
+                self::$errors[] = 'Error: Failed to save Goods Received to database.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to save Goods Delivered to database. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to save Goods Received to database. Please contact Admin';
             }
 
             return false;
@@ -242,8 +240,7 @@ class GoodsReceivedService
             //update the status of the txn
             if ($approval)
             {
-                $Txn->status = $data['status'];
-                $Txn->balances_where_updated = 1;
+                $Txn->status = 'approved';
                 $Txn->save();
             }
 
@@ -256,20 +253,20 @@ class GoodsReceivedService
         {
             DB::connection('tenant')->rollBack();
 
-            Log::critical('Fatal Internal Error: Failed to update GoodsReceived in database');
+            Log::critical('Fatal Internal Error: Failed to update Goods Received in database');
             Log::critical($e);
 
             //print_r($e); exit;
             if (App::environment('local'))
             {
-                self::$errors[] = 'Error: Failed to update GoodsReceived in database.';
+                self::$errors[] = 'Error: Failed to update Goods Received in database.';
                 self::$errors[] = 'File: ' . $e->getFile();
                 self::$errors[] = 'Line: ' . $e->getLine();
                 self::$errors[] = 'Message: ' . $e->getMessage();
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to update GoodsReceived in database. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to update Goods Received in database. Please contact Admin';
             }
 
             return false;
@@ -410,7 +407,6 @@ class GoodsReceivedService
             if ($approval)
             {
                 $Txn->status = 'approved';
-                $Txn->balances_where_updated = 1;
                 $Txn->save();
             }
 
@@ -432,7 +428,7 @@ class GoodsReceivedService
             }
             else
             {
-                self::$errors[] = 'Fatal Internal Error: Failed to approve GoodsReceived. Please contact Admin';
+                self::$errors[] = 'Fatal Internal Error: Failed to approve Goods Received. Please contact Admin';
             }
 
             return false;

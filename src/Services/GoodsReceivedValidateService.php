@@ -90,7 +90,6 @@ class GoodsReceivedValidateService
         $data['terms_and_conditions'] = $requestInstance->input('terms_and_conditions', null);
         $data['contact_notes'] = $requestInstance->input('contact_notes', null);
         $data['status'] = strtolower($requestInstance->input('status', null));
-        $data['balances_where_updated'] = 0;
 
 
         //set the transaction total to zero
