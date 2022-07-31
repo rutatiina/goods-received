@@ -2,6 +2,7 @@
 
 namespace Rutatiina\GoodsReceived\Services;
 
+use Rutatiina\Inventory\Models\Inventory;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 
@@ -15,7 +16,24 @@ trait GoodsReceivedApprovalService
             return false;
         }
 
-        //inventory checks and inventory balance update if needed
+        // print_r($data['items']); exit;
+
+        //Update the inventory summary
+        foreach ($data['items'] as &$item)
+        {
+            $inventory = Inventory::firstOrCreate([
+                'tenant_id' => $item['tenant_id'], 
+                'project_id' => @$data['project_id'], 
+                'date' => $data['date'],
+                'item_id' => $item['item_id'],
+                'batch' => $item['batch'],
+            ]);
+
+            //increase the 
+            $inventory->increment('units_received', $item['units']);
+            $inventory->increment('units_available', $item['units']);
+
+        }
         //$this->inventory(); //currently inventory update for estimates is disabled -< todo update the inventory here
 
         return true;
