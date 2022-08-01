@@ -22,31 +22,20 @@ class GoodsReceivedValidateService
         //validate the data
         $customMessages = [
             //'total.in' => "Item total is invalid:\nItem total = item rate x item quantity",
-
-            'items.*.taxes.*.code.required' => "Tax code is required",
-            'items.*.taxes.*.total.required' => "Tax total is required",
-            //'items.*.taxes.*.exclusive.required' => "Tax exclusive amount is required",
         ];
 
         $rules = [
             'contact_id' => 'required|numeric',
             'date' => 'required|date',
-            'base_currency' => 'required',
-            'due_date' => 'date|nullable',
             'salesperson_contact_id' => 'numeric|nullable',
             'memo' => 'string|nullable',
 
             'items' => 'required|array',
             'items.*.name' => 'required_without:item_id',
-            'items.*.rate' => 'required|numeric',
             'items.*.quantity' => 'required|numeric|gt:0',
             //'items.*.total' => 'required|numeric|in:' . $itemTotal, //todo custom validator to check this
             'items.*.units' => 'numeric|nullable',
-            'items.*.taxes' => 'array|nullable',
 
-            'items.*.taxes.*.code' => 'required',
-            'items.*.taxes.*.total' => 'required|numeric',
-            //'items.*.taxes.*.exclusive' => 'required|numeric',
         ];
 
         $validator = Validator::make($requestInstance->all(), $rules, $customMessages);
@@ -100,18 +89,6 @@ class GoodsReceivedValidateService
         $data['items'] = [];
         foreach ($requestInstance->items as $key => $item)
         {
-            $itemTaxes = $requestInstance->input('items.'.$key.'.taxes', []);
-
-            $txnTotal           += ($item['rate']*$item['quantity']);
-            $taxableAmount      += ($item['rate']*$item['quantity']);
-            $itemTaxableAmount   = ($item['rate']*$item['quantity']); //calculate the item taxable amount
-
-            foreach ($itemTaxes as $itemTax)
-            {
-                $txnTotal           += $itemTax['exclusive'];
-                $taxableAmount      -= $itemTax['inclusive'];
-                $itemTaxableAmount  -= $itemTax['inclusive']; //calculate the item taxable amount more by removing the inclusive amount
-            }
 
             //get the item
             $itemModel = Item::find($item['item_id']);
@@ -124,13 +101,9 @@ class GoodsReceivedValidateService
                 'name' => $item['name'],
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
-                'rate' => $item['rate'],
-                'total' => $item['total'],
-                'taxable_amount' => $itemTaxableAmount,
                 'units' => ($item['quantity']*$itemModel['units']), //$requestInstance->input('items.'.$key.'.units', null),
                 'batch' => $requestInstance->input('items.'.$key.'.batch', null),
                 'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
-                'taxes' => $itemTaxes,
             ];
 
         }

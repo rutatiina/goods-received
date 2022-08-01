@@ -2,15 +2,16 @@
 
 namespace Rutatiina\GoodsReceived\Services;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
+use Rutatiina\Tax\Models\Tax;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Rutatiina\GoodsReceived\Models\GoodsReceived;
+use Rutatiina\GoodsReceived\Models\GoodsReceivedSetting;
+use Rutatiina\GoodsReceived\Services\GoodsReceivedInvetoryService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
-use Rutatiina\GoodsReceived\Models\GoodsReceivedSetting;
-use Rutatiina\Tax\Models\Tax;
 
 class GoodsReceivedService
 {
@@ -114,11 +115,8 @@ class GoodsReceivedService
             //Save the items >> $data['items']
             GoodsReceivedItemService::store($data);
 
-            //check status and update financial account and contact balances accordingly
-            $approval = GoodsReceivedApprovalService::run($data);
-
             //update the status of the txn
-            if ($approval)
+            if (GoodsReceivedInvetoryService::update($data))
             {
                 $Txn->status = 'approved';
                 $Txn->save();
@@ -170,23 +168,21 @@ class GoodsReceivedService
 
         try
         {
-            $Txn = GoodsReceived::with('items', 'ledgers')->findOrFail($data['id']);
+            $Txn = GoodsReceived::with('items')->findOrFail($data['id']);
 
             if ($Txn->status == 'approved')
             {
-                self::$errors[] = 'Approved Transaction cannot be not be edited';
-                return false;
+                //self::$errors[] = 'Approved Transaction cannot be not be edited';
+                //return false;
             }
+
+            //reverse the inventory entries
+            GoodsReceivedInvetoryService::reverse($Txn->toArray());
 
             //Delete affected relations
             $Txn->items()->delete();
             $Txn->comments()->delete();
 
-            //reverse the account balances
-            AccountBalanceUpdateService::doubleEntry($Txn->toArray(), true);
-
-            //reverse the contact balances
-            ContactBalanceUpdateService::doubleEntry($Txn->toArray(), true);
 
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
@@ -210,11 +206,8 @@ class GoodsReceivedService
             //Save the items >> $data['items']
             GoodsReceivedItemService::store($data);
 
-            //check status and update financial account and contact balances accordingly
-            $approval = GoodsReceivedApprovalService::run($data);
-
             //update the status of the txn
-            if ($approval)
+            if (GoodsReceivedInvetoryService::update($data))
             {
                 $Txn->status = 'approved';
                 $Txn->save();
@@ -265,16 +258,11 @@ class GoodsReceivedService
                 return false;
             }
 
+            GoodsReceivedInvetoryService::reverse($Txn->toArray());
+
             //Delete affected relations
             $Txn->items()->delete();
             $Txn->comments()->delete();
-
-            //reverse the account balances
-            AccountBalanceUpdateService::doubleEntry($Txn, true);
-
-            //reverse the contact balances
-            ContactBalanceUpdateService::doubleEntry($Txn, true);
-
             $Txn->delete();
 
             DB::connection('tenant')->commit();
@@ -311,8 +299,7 @@ class GoodsReceivedService
         $taxes = Tax::all()->keyBy('code');
 
         $txn = GoodsReceived::findOrFail($id);
-        $txn->load('contact', 'items.taxes');
-        $txn->setAppends(['taxes']);
+        $txn->load('contact', 'items');
 
         $attributes = $txn->toArray();
 
@@ -375,7 +362,7 @@ class GoodsReceivedService
         try
         {
             $data['status'] = 'approved';
-            $approval = GoodsReceivedApprovalService::run($data);
+            $approval = GoodsReceivedInvetoryService::update($data);
 
             //update the status of the txn
             if ($approval)
