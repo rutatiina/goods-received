@@ -21,7 +21,6 @@ class GoodsReceivedItemService
         //Save the items >> $data['items']
         foreach ($data['items'] as &$item)
         {
-            unset($item['taxes']);
             $item['goods_received_id'] = $data['id'];
 
             GoodsReceivedItem::create($item);

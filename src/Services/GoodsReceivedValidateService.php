@@ -81,15 +81,10 @@ class GoodsReceivedValidateService
         $data['status'] = strtolower($requestInstance->input('status', null));
 
 
-        //set the transaction total to zero
-        $txnTotal = 0;
-        $taxableAmount = 0;
-
         //Formulate the DB ready items array
         $data['items'] = [];
         foreach ($requestInstance->items as $key => $item)
         {
-
             //get the item
             $itemModel = Item::find($item['item_id']);
 
@@ -104,12 +99,10 @@ class GoodsReceivedValidateService
                 'units' => ($item['quantity']*$itemModel['units']), //$requestInstance->input('items.'.$key.'.units', null),
                 'batch' => $requestInstance->input('items.'.$key.'.batch', null),
                 'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
+                'inventory_tracking' => $itemModel->inventory_tracking,
             ];
 
         }
-
-        $data['taxable_amount'] = $taxableAmount;
-        $data['total'] = $txnTotal;
 
         //Return the array of txns
         //print_r($data); exit;
