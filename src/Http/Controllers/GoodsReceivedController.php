@@ -35,10 +35,10 @@ class GoodsReceivedController extends Controller
 
     public function __construct()
     {
-        $this->middleware('permission:goods-received.view');
-        $this->middleware('permission:goods-received.create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:goods-received.update', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:goods-received.delete', ['only' => ['destroy']]);
+        // $this->middleware('permission:goods-received.view');
+        // $this->middleware('permission:goods-received.create', ['only' => ['create', 'store']]);
+        // $this->middleware('permission:goods-received.update', ['only' => ['edit', 'update']]);
+        // $this->middleware('permission:goods-received.delete', ['only' => ['destroy']]);
     }
 
     public function index(Request $request)
