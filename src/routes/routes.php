@@ -10,8 +10,8 @@ Route::group(['middleware' => ['web', 'auth', 'tenant', 'service.accounting']], 
         Route::post('approve', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@approve')->name('goods-received.approve');
         //Route::post('contact-estimates', 'Rutatiina\GoodsReceived\Http\Controllers\Sales\ReceiptController@estimates');
         Route::get('{id}/copy', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@copy');
-		Route::delete('delete', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@delete')->name('goods-received.delete');
-		Route::delete('cancel', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@cancel')->name('goods-received.cancel');
+        Route::delete('delete', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@delete')->name('goods-received.delete');
+        Route::delete('cancel', 'Rutatiina\GoodsReceived\Http\Controllers\GoodsReceivedController@cancel')->name('goods-received.cancel');
 
     });
 
