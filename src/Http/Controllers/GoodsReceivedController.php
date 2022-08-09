@@ -54,7 +54,8 @@ class GoodsReceivedController extends Controller
         $txns = GoodsReceived::with('items')->latest()->paginate($per_page);
 
         return [
-            'tableData' => $txns
+            'tableData' => $txns,
+            'routes' => $this->routes()
         ];
     }
 
@@ -208,22 +209,22 @@ class GoodsReceivedController extends Controller
 
     #-----------------------------------------------------------------------------------
 
-    public function approve($id)
+    public function approve(Request $request)
     {
-        $approve = GoodsReceivedService::approve($id);
-
-        if ($approve == false)
+        if (GoodsReceivedService::approve($request->ids))
+        {
+            return [
+                'status' => true,
+                'messages' => [count($request->ids) . ' Goods received note(s) approved.'],
+            ];
+        }
+        else
         {
             return [
                 'status' => false,
                 'messages' => GoodsReceivedService::$errors
             ];
         }
-
-        return [
-            'status' => true,
-            'messages' => ['Goods received note Approved'],
-        ];
 
     }
 
@@ -285,5 +286,32 @@ class GoodsReceivedController extends Controller
         //$books->load('author', 'publisher'); //of no use
 
         return $export;
+    }
+
+    public function routes()
+    {
+        return [
+            'delete' => route('goods-received.delete'),
+            'approve' => route('goods-received.approve'),
+            'cancel' => route('goods-received.cancel'),
+        ];
+    }
+
+    public function delete(Request $request)
+    {
+        if (GoodsReceivedService::destroyMany($request->ids))
+        {
+            return [
+                'status' => true,
+                'messages' => [count($request->ids) . ' Goods received note(s) deleted.'],
+            ];
+        }
+        else
+        {
+            return [
+                'status' => false,
+                'messages' => GoodsReceivedService::$errors
+            ];
+        }
     }
 }

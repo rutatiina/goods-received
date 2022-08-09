@@ -250,13 +250,7 @@ class GoodsReceivedService
 
         try
         {
-            $Txn = GoodsReceived::with('items', 'ledgers')->findOrFail($id);
-
-            if ($Txn->status == 'approved')
-            {
-                self::$errors[] = 'Approved Transaction cannot be not be deleted';
-                return false;
-            }
+            $Txn = GoodsReceived::with('items')->findOrFail($id);
 
             GoodsReceivedInvetoryService::reverse($Txn->toArray());
 
@@ -292,6 +286,15 @@ class GoodsReceivedService
 
             return false;
         }
+    }
+
+    public static function destroyMany($ids)
+    {
+        foreach($ids as $id)
+        {
+            if(!self::destroy($id)) return false;
+        }
+        return true;
     }
 
     public static function copy($id)
@@ -346,7 +349,7 @@ class GoodsReceivedService
 
     public static function approve($id)
     {
-        $Txn = GoodsReceived::with(['ledgers'])->findOrFail($id);
+        $Txn = GoodsReceived::with(['items'])->findOrFail($id);
 
         if (!in_array($Txn->status, config('financial-accounting.approvable_status')))
         {

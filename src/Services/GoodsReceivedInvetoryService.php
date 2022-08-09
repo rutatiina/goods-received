@@ -5,6 +5,7 @@ namespace Rutatiina\GoodsReceived\Services;
 use Rutatiina\Inventory\Models\Inventory;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
+use Rutatiina\Item\Models\Item;
 
 class GoodsReceivedInvetoryService
 {
@@ -109,6 +110,19 @@ class GoodsReceivedInvetoryService
         //Update the inventory summary
         foreach ($data['items'] as $item)
         {
+            if (!isset($item['inventory_tracking']))
+            {
+                if(is_numeric($item['item_id']))
+                {
+                    $itemModel = Item::find($item['item_id']);
+                    $item['inventory_tracking'] = $itemModel['inventory_tracking'];
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
             if ($item['inventory_tracking'] == 0) continue;
             
             $inventory = self::record($data, $item);
