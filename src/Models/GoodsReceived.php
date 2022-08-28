@@ -5,10 +5,12 @@ namespace Rutatiina\GoodsReceived\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
+use \Bkwld\Cloner\Cloneable;
 
 class GoodsReceived extends Model
 {
     use LogsActivity;
+    use Cloneable;
 
     protected static $logName = 'Txn';
     protected static $logFillable = true;
@@ -23,6 +25,9 @@ class GoodsReceived extends Model
     protected $primaryKey = 'id';
 
     protected $guarded = [];
+
+    protected $cloneable_relations = ['items'];
+
 
     /**
      * The attributes that should be hidden for arrays.

@@ -172,22 +172,18 @@ class GoodsReceivedService
 
         try
         {
-            $Txn = GoodsReceived::with('items')->findOrFail($data['id']);
+            $originalTxn = GoodsReceived::with('items')->findOrFail($data['id']);
 
-            if ($Txn->status == 'approved')
-            {
-                //self::$errors[] = 'Approved Transaction cannot be not be edited';
-                //return false;
-            }
+            $Txn = $originalTxn->replicate();
 
             //reverse the inventory entries
-            GoodsReceivedInvetoryService::reverse($Txn->toArray());
+            GoodsReceivedInvetoryService::reverse($originalTxn->toArray());
 
             //Delete affected relations
             $Txn->items()->delete();
             $Txn->comments()->delete();
 
-
+            $Txn->parent_id = $originalTxn->id;
             $Txn->tenant_id = $data['tenant_id'];
             $Txn->created_by = Auth::id();
             $Txn->document_name = $data['document_name'];
@@ -217,6 +213,8 @@ class GoodsReceivedService
                 $Txn->save();
             }
 
+            $originalTxn->update(['status' => 'copy']);
+
             DB::connection('tenant')->commit();
 
             return $Txn;
@@ -230,7 +228,11 @@ class GoodsReceivedService
             Log::critical($e);
 
             //print_r($e); exit;
-            if (App::environment('local'))
+            if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1690)
+            {
+                self::$errors[] = 'Error: Item inventory / stock is not enough';
+            }
+            elseif (App::environment('local'))
             {
                 self::$errors[] = 'Error: Failed to update Goods Received in database.';
                 self::$errors[] = 'File: ' . $e->getFile();

@@ -25,7 +25,7 @@ class GoodsReceivedValidateService
         ];
 
         $rules = [
-            'contact_id' => 'required|numeric',
+            'contact_id' => 'numeric|nullable',
             'date' => 'required|date',
             'salesperson_contact_id' => 'numeric|nullable',
             'memo' => 'string|nullable',
@@ -51,7 +51,7 @@ class GoodsReceivedValidateService
         $settings = GoodsReceivedSetting::firstOrFail();
         //Log::info($this->settings);
 
-        $contact = Contact::findOrFail($requestInstance->contact_id);
+        $contact = Contact::find($requestInstance->contact_id);
 
 
         $data['id'] = $requestInstance->input('id', null); //for updating the id will always be posted
@@ -66,8 +66,8 @@ class GoodsReceivedValidateService
         $data['number_postfix'] = $settings->number_postfix;
         $data['date'] = $requestInstance->input('date');
         $data['contact_id'] = $requestInstance->contact_id;
-        $data['contact_name'] = $contact->name;
-        $data['contact_address'] = trim($contact->shipping_address_street1 . ' ' . $contact->shipping_address_street2);
+        $data['contact_name'] = optional($contact)->name;
+        $data['contact_address'] = trim(optional($contact)->shipping_address_street1 . ' ' . optional($contact)->shipping_address_street2);
         $data['reference'] = $requestInstance->input('reference', null);
         $data['base_currency'] =  $requestInstance->input('base_currency');
         $data['quote_currency'] =  $requestInstance->input('quote_currency', $data['base_currency']);
