@@ -209,13 +209,13 @@ class GoodsReceivedController extends Controller
 
     #-----------------------------------------------------------------------------------
 
-    public function approve(Request $request)
+    public function approve($id)
     {
-        if (GoodsReceivedService::approve($request->ids))
+        if (GoodsReceivedService::approve($id))
         {
             return [
                 'status' => true,
-                'messages' => [count($request->ids) . ' Goods received note(s) approved.'],
+                'messages' => ['Goods received note approved.'],
             ];
         }
         else
@@ -291,7 +291,6 @@ class GoodsReceivedController extends Controller
     {
         return [
             'delete' => route('goods-received.delete'),
-            'approve' => route('goods-received.approve'),
             'cancel' => route('goods-received.cancel'),
         ];
     }

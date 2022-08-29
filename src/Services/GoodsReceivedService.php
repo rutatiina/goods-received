@@ -103,6 +103,7 @@ class GoodsReceivedService
             $Txn->reference = $data['reference'];
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
+            $Txn->status = $data['status'];
 
             $Txn->save();
 
@@ -114,11 +115,8 @@ class GoodsReceivedService
             GoodsReceivedItemService::store($data);
 
             //update the status of the txn
-            if (GoodsReceivedInvetoryService::update($data))
-            {
-                $Txn->status = 'approved';
-                $Txn->save();
-            }
+            $Txn->status = (GoodsReceivedInvetoryService::update($data)) ? 'approved' : 'draft';
+            $Txn->save();
 
             DB::connection('tenant')->commit();
 
@@ -357,7 +355,7 @@ class GoodsReceivedService
 
         if (!in_array($Txn->status, config('financial-accounting.approvable_status')))
         {
-            self::$errors[] = $Txn->status . ' GoodsReceived cannot be approved';
+            self::$errors[] = $Txn->status . ' GoodsReceived of status '.$Txn->status.'cannot be approved';
             return false;
         }
 
@@ -369,21 +367,15 @@ class GoodsReceivedService
         try
         {
             $data['status'] = 'approved';
-            $approval = GoodsReceivedInvetoryService::update($data);
-
-            //update the status of the txn
-            if ($approval)
-            {
-                $Txn->status = 'approved';
-                $Txn->save();
-            }
+            $Txn->status = (GoodsReceivedInvetoryService::update($data)) ? 'approved' : 'draft';
+            $Txn->save();
 
             DB::connection('tenant')->commit();
 
             return true;
 
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             DB::connection('tenant')->rollBack();
             //print_r($e); exit;

@@ -74,11 +74,23 @@ class GoodsReceivedInvetoryService
 
     public static function update($data)
     {
-        // print_r($data['items']); exit;
+        if ($data['status'] != 'approved') return false; //can only update balances if status is approved
 
         //Update the inventory summary
         foreach ($data['items'] as $item)
         {
+            if (!isset($item['inventory_tracking']))
+            {
+                if(is_numeric($item['item_id']))
+                {
+                    $item['inventory_tracking'] = optional(Item::find($item['item_id']))->inventory_tracking;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
             if ($item['inventory_tracking'] == 0) continue;
 
             $inventory = self::record($data, $item);
@@ -94,6 +106,8 @@ class GoodsReceivedInvetoryService
 
     public static function reverse($data)
     {
+        if ($data['status'] != 'approved') return false; //can only update balances if status is approved
+        
         //Update the inventory summary
         foreach ($data['items'] as $item)
         {
@@ -101,8 +115,7 @@ class GoodsReceivedInvetoryService
             {
                 if(is_numeric($item['item_id']))
                 {
-                    $itemModel = Item::find($item['item_id']);
-                    $item['inventory_tracking'] = $itemModel['inventory_tracking'];
+                    $item['inventory_tracking'] = optional(Item::find($item['item_id']))->inventory_tracking;
                 }
                 else
                 {
