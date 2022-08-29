@@ -52,9 +52,7 @@ class GoodsReceivedService
         //print_r($attributes); exit;
 
         $attributes['_method'] = 'PATCH';
-
-        // $attributes['contact']['currency'] = $attributes['contact']['currency_and_exchange_rate'];
-        // $attributes['contact']['currencies'] = $attributes['contact']['currencies_and_exchange_rates'];
+        $attributes['contact'] = ($attributes['contact']) ? $attributes['contact'] : json_decode('{}');
 
         foreach ($attributes['items'] as $key => $item)
         {
@@ -174,7 +172,7 @@ class GoodsReceivedService
         {
             $originalTxn = GoodsReceived::with('items')->findOrFail($data['id']);
 
-            $Txn = $originalTxn->replicate();
+            $Txn = $originalTxn->duplicate();
 
             //reverse the inventory entries
             GoodsReceivedInvetoryService::reverse($originalTxn->toArray());
@@ -213,7 +211,7 @@ class GoodsReceivedService
                 $Txn->save();
             }
 
-            $originalTxn->update(['status' => 'copy']);
+            $originalTxn->update(['status' => 'edited']);
 
             DB::connection('tenant')->commit();
 

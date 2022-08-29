@@ -33,7 +33,6 @@ class GoodsReceivedValidateService
             'items' => 'required|array',
             'items.*.name' => 'required_without:item_id',
             'items.*.quantity' => 'required|numeric|gt:0',
-            //'items.*.total' => 'required|numeric|in:' . $itemTotal, //todo custom validator to check this
             'items.*.units' => 'numeric|nullable',
 
         ];
