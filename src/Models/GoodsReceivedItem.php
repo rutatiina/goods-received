@@ -29,7 +29,7 @@ class GoodsReceivedItem extends Model
     ];
 
     protected $casts = [
-        'id' => 'integer',
+        'item_id' => 'integer',
     ];
 
     /**
