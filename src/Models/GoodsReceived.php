@@ -46,6 +46,7 @@ class GoodsReceived extends Model
         'created_at',
         'updated_at',
     ];
+    
     protected $appends = [
         'number_string',
         'total_in_words',
