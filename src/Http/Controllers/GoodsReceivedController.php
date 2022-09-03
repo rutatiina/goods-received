@@ -188,9 +188,7 @@ class GoodsReceivedController extends Controller
 
     public function destroy($id)
     {
-        $destroy = GoodsReceivedService::destroy($id);
-
-        if ($destroy)
+        if (GoodsReceivedService::destroy($id))
         {
             return [
                 'status' => true,

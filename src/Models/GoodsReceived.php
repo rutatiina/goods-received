@@ -34,7 +34,10 @@ class GoodsReceived extends Model
         'contact_id' => 'integer',
     ];
 
-    protected $cloneable_relations = ['items', 'comments'];
+    protected $cloneable_relations = [
+        'items', 
+        'comments'
+    ];
 
 
     /**
