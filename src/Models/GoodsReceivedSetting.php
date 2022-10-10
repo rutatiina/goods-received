@@ -3,11 +3,13 @@
 namespace Rutatiina\GoodsReceived\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Rutatiina\Tenant\Scopes\TenantIdScope;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GoodsReceivedSetting extends Model
 {
+    use SoftDeletes;
     use LogsActivity;
 
     protected static $logName = 'Goods Received Settings';

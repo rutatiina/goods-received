@@ -67,12 +67,21 @@ class GoodsReceived extends Model
         static::addGlobalScope(new TenantIdScope);
         static::addGlobalScope(new StatusEditedScope);
 
-        self::deleting(function($txn) { // before delete() method call this
+        self::deleting(function($txn) {
              $txn->items()->each(function($row) {
                 $row->delete();
              });
              $txn->comments()->each(function($row) {
                 $row->delete();
+             });
+        });
+
+        self::restored(function($txn) {
+             $txn->items()->each(function($row) {
+                $row->restore();
+             });
+             $txn->comments()->each(function($row) {
+                $row->restore();
              });
         });
 
