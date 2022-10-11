@@ -310,4 +310,22 @@ class GoodsReceivedController extends Controller
             ];
         }
     }
+
+    public function cancel(Request $request)
+    {
+        if (GoodsReceivedService::cancelMany($request->ids))
+        {
+            return [
+                'status' => true,
+                'messages' => [count($request->ids) . ' Goods received note(s) canceled.'],
+            ];
+        }
+        else
+        {
+            return [
+                'status' => false,
+                'messages' => GoodsReceivedService::$errors
+            ];
+        }
+    }
 }
