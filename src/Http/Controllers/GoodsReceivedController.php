@@ -109,6 +109,8 @@ class GoodsReceivedController extends Controller
 
     public function store(Request $request)
     {
+        // return $request;
+
         $storeService = GoodsReceivedService::store($request);
 
         if ($storeService == false)

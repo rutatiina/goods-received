@@ -64,6 +64,7 @@ class GoodsReceivedValidateService
         $data['number_length'] = $settings->minimum_number_length;
         $data['number_postfix'] = $settings->number_postfix;
         $data['date'] = $requestInstance->input('date');
+        $data['credit_financial_account_code'] = $requestInstance->input('credit_financial_account_code', null);
         $data['contact_id'] = $requestInstance->contact_id;
         $data['contact_name'] = optional($contact)->name;
         $data['contact_address'] = trim(optional($contact)->shipping_address_street1 . ' ' . optional($contact)->shipping_address_street2);
@@ -79,11 +80,17 @@ class GoodsReceivedValidateService
         $data['contact_notes'] = $requestInstance->input('contact_notes', null);
         $data['status'] = strtolower($requestInstance->input('status', null));
 
+        $data['total'] = 0;
 
         //Formulate the DB ready items array
         $data['items'] = [];
         foreach ($requestInstance->items as $key => $item)
         {
+            $data['total'] += ($item['rate']*$item['quantity']);
+
+            //use item selling_financial_account_code if available and default if not
+            $financialAccountToDebit = $item['debit_financial_account_code'];
+
             //get the item
             $itemModel = Item::find($item['item_id']);
 
@@ -92,16 +99,45 @@ class GoodsReceivedValidateService
                 'created_by' => $data['created_by'],
                 'contact_id' => $item['contact_id'],
                 'item_id' => $item['item_id'],
+                'debit_financial_account_code' => $financialAccountToDebit,
                 'name' => $item['name'],
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
                 'units' => ($item['quantity']*$itemModel['units']), //$requestInstance->input('items.'.$key.'.units', null),
+                'rate' => $item['rate'],
+                'total' => $item['total'],
                 'batch' => $requestInstance->input('items.'.$key.'.batch', null),
                 'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
                 'inventory_tracking' => ($itemModel->inventory_tracking ?? 0),
             ];
 
+            //DR ledger
+            $data['ledgers'][$financialAccountToDebit]['financial_account_code'] = $financialAccountToDebit;
+            $data['ledgers'][$financialAccountToDebit]['effect'] = 'debit';
+            $data['ledgers'][$financialAccountToDebit]['total'] = @$data['ledgers'][$financialAccountToDebit]['total'];
+            $data['ledgers'][$financialAccountToDebit]['contact_id'] = $data['contact_id'];
+
         }
+        
+        //CR ledger
+        $data['ledgers'][] = [
+            'financial_account_code' => $data['credit_financial_account_code'],
+            'effect' => 'credit',
+            'total' => $data['total'],
+            'contact_id' => $data['contact_id']
+        ];
+
+        //Now add the default values to items and ledgers
+
+        foreach ($data['ledgers'] as &$ledger)
+        {
+            $ledger['tenant_id'] = $data['tenant_id'];
+            $ledger['date'] = date('Y-m-d', strtotime($data['date']));
+            $ledger['base_currency'] = $data['base_currency'];
+            $ledger['quote_currency'] = $data['quote_currency'];
+            $ledger['exchange_rate'] = $data['exchange_rate'];
+        }
+        unset($ledger);
 
         //Return the array of txns
         //print_r($data); exit;
