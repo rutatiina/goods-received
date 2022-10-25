@@ -7,10 +7,12 @@ use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 use Rutatiina\Item\Models\Item;
 
-class GoodsReceivedInvetoryService
+class GoodsReceivedInventoryService
 {
     private static function record($transaction, $item)
     {
+        $item['batch'] = (isset($item['batch'])) ? $item['batch'] : '';
+
         $inventory = Inventory::whereDate('date', '<=', $transaction['date'])
             ->where([
                 'tenant_id' => $item['tenant_id'], 
@@ -38,6 +40,7 @@ class GoodsReceivedInvetoryService
                 $inventoryModel = new Inventory;
                 $inventoryModel->tenant_id = $item['tenant_id'];
                 $inventoryModel->date = $transaction['date'];
+                $inventoryModel->financial_account_code = $item['financial_account_code'];
                 $inventoryModel->item_id = $item['item_id'];
                 $inventoryModel->batch = $item['batch'];
                 $inventoryModel->units_received = $inventory->units_received;
@@ -57,6 +60,7 @@ class GoodsReceivedInvetoryService
             $inventoryModel = new Inventory;
             $inventoryModel->tenant_id = $item['tenant_id'];
             $inventoryModel->date = $transaction['date'];
+            $inventoryModel->financial_account_code = $item['financial_account_code'];
             $inventoryModel->item_id = $item['item_id'];
             $inventoryModel->batch = $item['batch'];
             $inventoryModel->save();
@@ -65,6 +69,7 @@ class GoodsReceivedInvetoryService
 
         return Inventory::whereDate('date', '>=', $transaction['date'])
             ->where([
+                'financial_account_code' => $item['financial_account_code'], 
                 'tenant_id' => $item['tenant_id'], 
                 'project_id' => @$transaction['project_id'], 
                 'item_id' => $item['item_id'],
@@ -75,9 +80,10 @@ class GoodsReceivedInvetoryService
     public static function update($data)
     {
         if ($data['status'] != 'approved') return false; //can only update balances if status is approved
+        $inventory_items = (isset($data['inventory_items'])) ? $data['inventory_items'] : $data['items'];
 
         //Update the inventory summary
-        foreach ($data['items'] as $item)
+        foreach ($inventory_items as $item)
         {
             if (!isset($item['inventory_tracking']))
             {

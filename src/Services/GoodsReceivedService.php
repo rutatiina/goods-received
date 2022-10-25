@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Rutatiina\GoodsReceived\Models\GoodsReceived;
 use Rutatiina\GoodsReceived\Models\GoodsReceivedSetting;
-use Rutatiina\GoodsReceived\Services\GoodsReceivedInvetoryService;
+use Rutatiina\GoodsReceived\Services\GoodsReceivedInventoryService;
 use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
 use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 
@@ -116,7 +116,7 @@ class GoodsReceivedService
             GoodsReceivedItemService::store($data);
 
             //update the status of the txn
-            $Txn->status = (GoodsReceivedInvetoryService::update($data)) ? 'approved' : 'draft';
+            $Txn->status = (GoodsReceivedInventoryService::update($data)) ? 'approved' : 'draft';
             $Txn->save();
 
             DB::connection('tenant')->commit();
@@ -174,7 +174,7 @@ class GoodsReceivedService
             $Txn = $originalTxn->duplicate();
 
             //reverse the inventory entries
-            GoodsReceivedInvetoryService::reverse($originalTxn->toArray());
+            GoodsReceivedInventoryService::reverse($originalTxn->toArray());
 
             //Delete affected relations
             $Txn->items()->delete();
@@ -204,7 +204,7 @@ class GoodsReceivedService
             GoodsReceivedItemService::store($data);
 
             //update the status of the txn
-            if (GoodsReceivedInvetoryService::update($data))
+            if (GoodsReceivedInventoryService::update($data))
             {
                 $Txn->status = 'approved';
                 $Txn->save();
@@ -255,7 +255,7 @@ class GoodsReceivedService
         {
             $Txn = GoodsReceived::with('items')->findOrFail($id);
 
-            GoodsReceivedInvetoryService::reverse($Txn->toArray());
+            GoodsReceivedInventoryService::reverse($Txn->toArray());
 
             //Delete affected relations
             $Txn->items()->delete();
@@ -300,7 +300,7 @@ class GoodsReceivedService
         {
             $Txn = GoodsReceived::with('items')->findOrFail($id);
 
-            GoodsReceivedInvetoryService::reverse($Txn->toArray());
+            GoodsReceivedInventoryService::reverse($Txn->toArray());
 
             $Txn->canceled = 1;
             $Txn->save();
@@ -420,7 +420,7 @@ class GoodsReceivedService
         try
         {
             $data['status'] = 'approved';
-            $Txn->status = (GoodsReceivedInvetoryService::update($data)) ? 'approved' : 'draft';
+            $Txn->status = (GoodsReceivedInventoryService::update($data)) ? 'approved' : 'draft';
             $Txn->save();
 
             DB::connection('tenant')->commit();
