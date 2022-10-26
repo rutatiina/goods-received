@@ -13,6 +13,8 @@ class CreateRgGoodsReceivedLedgersTable extends Migration
      */
     public function up()
     {
+        Schema::connection('tenant')->dropIfExists('rg_goods_received_ledgers');
+
         Schema::connection('tenant')->create('rg_goods_received_ledgers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->timestamps();
@@ -28,14 +30,14 @@ class CreateRgGoodsReceivedLedgersTable extends Migration
             $table->unsignedBigInteger('project_id')->nullable();
             $table->unsignedBigInteger('goods_received_id');
             $table->date('date');
-            $table->date('external_date');
+            // $table->date('external_date');
             $table->unsignedBigInteger('financial_account_code');
             $table->enum('effect', ['debit', 'credit']);
             $table->unsignedDecimal('total', 20, 5);
             $table->string('base_currency', 3);
             $table->string('quote_currency', 3);
             $table->unsignedDecimal('exchange_rate', 20,5);
-            $table->unsignedBigInteger('contact_id');
+            $table->unsignedBigInteger('contact_id')->nullable();
         });
     }
 

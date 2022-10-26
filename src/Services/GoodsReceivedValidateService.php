@@ -71,7 +71,7 @@ class GoodsReceivedValidateService
         $data['reference'] = $requestInstance->input('reference', null);
         $data['base_currency'] =  $requestInstance->input('base_currency');
         $data['quote_currency'] =  $requestInstance->input('quote_currency', $data['base_currency']);
-        $data['exchange_rate'] = $requestInstance->input('exchange_rate', 1);
+        $data['exchange_rate'] = (empty($requestInstance->input('exchange_rate'))) ? 1 : $requestInstance->input('exchange_rate');
         $data['salesperson_contact_id'] = $requestInstance->input('salesperson_contact_id', null);
         $data['branch_id'] = $requestInstance->input('branch_id', null);
         $data['store_id'] = $requestInstance->input('store_id', null);
@@ -81,6 +81,7 @@ class GoodsReceivedValidateService
         $data['status'] = strtolower($requestInstance->input('status', null));
 
         $data['total'] = 0;
+        $data['ledgers'] = [];
 
         //Formulate the DB ready items array
         $data['items'] = [];
@@ -100,6 +101,7 @@ class GoodsReceivedValidateService
                 'contact_id' => $item['contact_id'],
                 'item_id' => $item['item_id'],
                 'debit_financial_account_code' => $financialAccountToDebit,
+                'financial_account_code' => $financialAccountToDebit,
                 'name' => $item['name'],
                 'description' => $item['description'],
                 'quantity' => $item['quantity'],
@@ -114,7 +116,7 @@ class GoodsReceivedValidateService
             //DR ledger
             $data['ledgers'][$financialAccountToDebit]['financial_account_code'] = $financialAccountToDebit;
             $data['ledgers'][$financialAccountToDebit]['effect'] = 'debit';
-            $data['ledgers'][$financialAccountToDebit]['total'] = @$data['ledgers'][$financialAccountToDebit]['total'];
+            $data['ledgers'][$financialAccountToDebit]['total'] = @$data['ledgers'][$financialAccountToDebit]['total'] + $item['total'];
             $data['ledgers'][$financialAccountToDebit]['contact_id'] = $data['contact_id'];
 
         }
@@ -138,6 +140,9 @@ class GoodsReceivedValidateService
             $ledger['exchange_rate'] = $data['exchange_rate'];
         }
         unset($ledger);
+
+        //If the credit_financial_account_code has not been set, clear the ledgers, there is no need for ledger entries
+        if (empty($data['credit_financial_account_code'])) $data['ledgers'] = [];
 
         //Return the array of txns
         //print_r($data); exit;

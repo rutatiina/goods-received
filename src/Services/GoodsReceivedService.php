@@ -102,9 +102,16 @@ class GoodsReceivedService
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
+
+            $Txn->base_currency = $data['base_currency'];
+            $Txn->quote_currency = $data['quote_currency'];
+            $Txn->exchange_rate = $data['exchange_rate'];
+            $Txn->total = $data['total'];
+
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
             $Txn->status = $data['status'];
+            $Txn->credit_financial_account_code = $data['credit_financial_account_code'];
 
             $Txn->save();
 
@@ -114,6 +121,9 @@ class GoodsReceivedService
 
             //Save the items >> $data['items']
             GoodsReceivedItemService::store($data);
+
+            //Save the ledgers >> $data['ledgers']; and update the balances
+            $Txn->ledgers()->createMany($data['ledgers']);
 
             //update the status of the txn
             $Txn->status = (GoodsReceivedInventoryService::update($data)) ? 'approved' : 'draft';

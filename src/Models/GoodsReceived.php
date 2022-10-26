@@ -143,6 +143,11 @@ class GoodsReceived extends Model
         return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedItem', 'goods_received_id')->orderBy('id', 'asc');
     }
 
+    public function ledgers()
+    {
+        return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedLedger', 'goods_received_id')->orderBy('id', 'asc');
+    }
+
     public function comments()
     {
         return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedComment', 'goods_received_id')->latest();
