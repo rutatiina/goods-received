@@ -183,6 +183,8 @@ class GoodsReceivedService
 
             $Txn = $originalTxn->duplicate();
 
+            // echo json_encode($originalTxn->toArray()); exit;
+
             //reverse the inventory entries
             GoodsReceivedInventoryService::reverse($originalTxn->toArray());
 
@@ -205,7 +207,7 @@ class GoodsReceivedService
             $Txn->quote_currency = $data['quote_currency'];
             $Txn->exchange_rate = $data['exchange_rate'];
             $Txn->total = $data['total'];
-            
+
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
             $Txn->contact_notes = $data['contact_notes'];

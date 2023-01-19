@@ -40,7 +40,7 @@ class GoodsReceivedInventoryService
                 $inventoryModel = new Inventory;
                 $inventoryModel->tenant_id = $item['tenant_id'];
                 $inventoryModel->date = $transaction['date'];
-                $inventoryModel->financial_account_code = $item['financial_account_code'];
+                $inventoryModel->financial_account_code = $item['debit_financial_account_code'];
                 $inventoryModel->item_id = $item['item_id'];
                 $inventoryModel->batch = $item['batch'];
                 $inventoryModel->units_received = $inventory->units_received;
@@ -60,7 +60,7 @@ class GoodsReceivedInventoryService
             $inventoryModel = new Inventory;
             $inventoryModel->tenant_id = $item['tenant_id'];
             $inventoryModel->date = $transaction['date'];
-            $inventoryModel->financial_account_code = $item['financial_account_code'];
+            $inventoryModel->financial_account_code = $item['debit_financial_account_code'];
             $inventoryModel->item_id = $item['item_id'];
             $inventoryModel->batch = $item['batch'];
             $inventoryModel->save();
@@ -69,7 +69,7 @@ class GoodsReceivedInventoryService
 
         return Inventory::whereDate('date', '>=', $transaction['date'])
             ->where([
-                'financial_account_code' => ($item['financial_account_code'] ?? null), 
+                'financial_account_code' => ($item['debit_financial_account_code'] ?? null), 
                 'tenant_id' => $item['tenant_id'], 
                 'project_id' => @$transaction['project_id'], 
                 'item_id' => $item['item_id'],
