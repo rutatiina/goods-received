@@ -200,9 +200,16 @@ class GoodsReceivedService
             $Txn->contact_name = $data['contact_name'];
             $Txn->contact_address = $data['contact_address'];
             $Txn->reference = $data['reference'];
+
+            $Txn->base_currency = $data['base_currency'];
+            $Txn->quote_currency = $data['quote_currency'];
+            $Txn->exchange_rate = $data['exchange_rate'];
+            $Txn->total = $data['total'];
+            
             $Txn->branch_id = $data['branch_id'];
             $Txn->store_id = $data['store_id'];
             $Txn->contact_notes = $data['contact_notes'];
+            $Txn->credit_financial_account_code = ($data['credit_financial_account_code'] ?? null);
 
             $Txn->save();
 

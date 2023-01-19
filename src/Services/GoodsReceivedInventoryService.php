@@ -69,7 +69,7 @@ class GoodsReceivedInventoryService
 
         return Inventory::whereDate('date', '>=', $transaction['date'])
             ->where([
-                'financial_account_code' => $item['financial_account_code'], 
+                'financial_account_code' => ($item['financial_account_code'] ?? null), 
                 'tenant_id' => $item['tenant_id'], 
                 'project_id' => @$transaction['project_id'], 
                 'item_id' => $item['item_id'],
