@@ -35,6 +35,11 @@ class GoodsReceivedValidateService
             'items.*.quantity' => 'required|numeric|gt:0',
             'items.*.units' => 'numeric|nullable',
 
+            'inputs' => 'nullable|array',
+            'inputs.*.name' => 'required_without:item_id',
+            'inputs.*.quantity' => 'required|numeric|gt:0',
+            // 'inputs.*.units' => 'numeric|nullable',
+
         ];
 
         $validator = Validator::make($requestInstance->all(), $rules, $customMessages);
@@ -119,6 +124,37 @@ class GoodsReceivedValidateService
             $data['ledgers'][$financialAccountToDebit]['total'] = @$data['ledgers'][$financialAccountToDebit]['total'] + $item['total'];
             $data['ledgers'][$financialAccountToDebit]['contact_id'] = $data['contact_id'];
 
+        }
+
+        //Formulate the DB ready inputs array
+        $data['inputs'] = [];
+        foreach ($requestInstance->inputs as $key => $item)
+        {
+            // $data['total'] += ($item['rate']*$item['quantity']);
+
+            //use item selling_financial_account_code if available and default if not
+            $financialAccountToCredit = $item['credit_financial_account_code'];
+
+            //get the item
+            $itemModel = Item::find($item['item_id']);
+
+            $data['inputs'][] = [
+                'tenant_id' => $data['tenant_id'],
+                'created_by' => $data['created_by'],
+                'contact_id' => $item['contact_id'],
+                'item_id' => $item['item_id'],
+                'credit_financial_account_code' => $financialAccountToCredit,
+                'financial_account_code' => $financialAccountToCredit,
+                'name' => $item['name'],
+                'description' => $item['description'],
+                'quantity' => $item['quantity'],
+                'units' => ($item['quantity']*$itemModel['units']), //$requestInstance->input('items.'.$key.'.units', null),
+                'rate' => $item['rate'],
+                'total' => $item['total'],
+                'batch' => $requestInstance->input('items.'.$key.'.batch', null),
+                'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
+                'inventory_tracking' => ($itemModel->inventory_tracking ?? 0),
+            ];
         }
         
         //CR ledger

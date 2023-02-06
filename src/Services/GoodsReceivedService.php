@@ -122,6 +122,9 @@ class GoodsReceivedService
             //Save the items >> $data['items']
             GoodsReceivedItemService::store($data);
 
+            //Save the inputs >> $data['inputs']
+            GoodsReceivedInputService::store($data);
+
             //Save the ledgers >> $data['ledgers']; and update the balances
             $Txn->ledgers()->createMany($data['ledgers']);
 
@@ -179,7 +182,7 @@ class GoodsReceivedService
 
         try
         {
-            $originalTxn = GoodsReceived::with('items')->findOrFail($data['id']);
+            $originalTxn = GoodsReceived::with(['items', 'inputs'])->findOrFail($data['id']);
 
             $Txn = $originalTxn->duplicate();
 
@@ -190,6 +193,7 @@ class GoodsReceivedService
 
             //Delete affected relations
             $Txn->items()->delete();
+            $Txn->inputs()->delete();
             $Txn->comments()->delete();
 
             $Txn->parent_id = $originalTxn->id;
@@ -221,6 +225,9 @@ class GoodsReceivedService
 
             //Save the items >> $data['items']
             GoodsReceivedItemService::store($data);
+
+            //Save the inputs >> $data['inputs']
+            GoodsReceivedInputService::store($data);
 
             //update the status of the txn
             if (GoodsReceivedInventoryService::update($data))
@@ -278,6 +285,7 @@ class GoodsReceivedService
 
             //Delete affected relations
             $Txn->items()->delete();
+            $Txn->inputs()->delete();
             $Txn->comments()->delete();
             $Txn->delete();
 

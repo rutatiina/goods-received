@@ -72,6 +72,9 @@ class GoodsReceived extends Model
              $txn->items()->each(function($row) {
                 $row->delete();
              });
+             $txn->inputs()->each(function($row) {
+                $row->delete();
+             });
              $txn->comments()->each(function($row) {
                 $row->delete();
              });
@@ -79,6 +82,9 @@ class GoodsReceived extends Model
 
         self::restored(function($txn) {
              $txn->items()->each(function($row) {
+                $row->restore();
+             });
+             $txn->inputs()->each(function($row) {
                 $row->restore();
              });
              $txn->comments()->each(function($row) {
@@ -141,6 +147,11 @@ class GoodsReceived extends Model
     public function items()
     {
         return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedItem', 'goods_received_id')->orderBy('id', 'asc');
+    }
+
+    public function inputs()
+    {
+        return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedInput', 'goods_received_id')->orderBy('id', 'asc');
     }
 
     public function ledgers()

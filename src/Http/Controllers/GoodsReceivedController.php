@@ -7,20 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\View;
-use Yajra\DataTables\Facades\DataTables;
 use Rutatiina\Contact\Traits\ContactTrait;
 use Rutatiina\GoodsReceived\Models\GoodsReceived;
 use Rutatiina\GoodsReceived\Traits\Item as TxnItem;
-use Rutatiina\GoodsReceived\Classes\Copy as TxnCopy;
-
-use Rutatiina\GoodsReceived\Classes\Edit as TxnEdit;
-use Rutatiina\GoodsReceived\Classes\Read as TxnRead;
-use Rutatiina\FinancialAccounting\Classes\Transaction;
-use Rutatiina\GoodsReceived\Classes\Number as TxnNumber;
-use Rutatiina\GoodsReceived\Classes\Update as TxnUpdate;
 use Illuminate\Support\Facades\Request as FacadesRequest;
-use Rutatiina\GoodsReceived\Classes\Approve as TxnApprove;
 use Rutatiina\GoodsReceived\Services\GoodsReceivedService;
 use Rutatiina\FinancialAccounting\Traits\FinancialAccountingTrait;
 
@@ -98,6 +88,7 @@ class GoodsReceivedController extends Controller
         $txnAttributes['contact_notes'] = null;
         $txnAttributes['terms_and_conditions'] = null;
         $txnAttributes['items'] = [$this->itemCreate()];
+        $txnAttributes['inputs'] = [];
 
         return [
             'pageTitle' => 'Create Goods Received Note', #required

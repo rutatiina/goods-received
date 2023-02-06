@@ -3,8 +3,6 @@
 namespace Rutatiina\GoodsReceived\Services;
 
 use Rutatiina\Inventory\Models\Inventory;
-use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
-use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 use Rutatiina\Item\Models\Item;
 
 class GoodsReceivedInventoryService
@@ -12,6 +10,7 @@ class GoodsReceivedInventoryService
     private static function record($transaction, $item)
     {
         $item['batch'] = (isset($item['batch'])) ? $item['batch'] : '';
+        $financialAccountCode = $item['debit_financial_account_code'] ?? $item['credit_financial_account_code'];
 
         $inventory = Inventory::whereDate('date', '<=', $transaction['date'])
             ->where([
@@ -40,7 +39,7 @@ class GoodsReceivedInventoryService
                 $inventoryModel = new Inventory;
                 $inventoryModel->tenant_id = $item['tenant_id'];
                 $inventoryModel->date = $transaction['date'];
-                $inventoryModel->financial_account_code = $item['debit_financial_account_code'];
+                $inventoryModel->financial_account_code = $financialAccountCode;
                 $inventoryModel->item_id = $item['item_id'];
                 $inventoryModel->batch = $item['batch'];
                 $inventoryModel->units_received = $inventory->units_received;
@@ -60,7 +59,7 @@ class GoodsReceivedInventoryService
             $inventoryModel = new Inventory;
             $inventoryModel->tenant_id = $item['tenant_id'];
             $inventoryModel->date = $transaction['date'];
-            $inventoryModel->financial_account_code = $item['debit_financial_account_code'];
+            $inventoryModel->financial_account_code = $financialAccountCode;
             $inventoryModel->item_id = $item['item_id'];
             $inventoryModel->batch = $item['batch'];
             $inventoryModel->save();
@@ -69,7 +68,7 @@ class GoodsReceivedInventoryService
 
         return Inventory::whereDate('date', '>=', $transaction['date'])
             ->where([
-                'financial_account_code' => ($item['debit_financial_account_code'] ?? null), 
+                'financial_account_code' => ($financialAccountCode ?? null), 
                 'tenant_id' => $item['tenant_id'], 
                 'project_id' => @$transaction['project_id'], 
                 'item_id' => $item['item_id'],
@@ -107,6 +106,30 @@ class GoodsReceivedInventoryService
 
         }
 
+        foreach ($data['inputs'] as $input)
+        {
+            if (!isset($input['inventory_tracking']))
+            {
+                if(is_numeric($input['item_id']))
+                {
+                    $input['inventory_tracking'] = optional(Item::find($input['item_id']))->inventory_tracking;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            if ($input['inventory_tracking'] == 0) continue;
+
+            $inventory = self::record($data, $input);
+
+            //increase the 
+            $inventory->decrement('units_received', $input['units']);
+            $inventory->decrement('units_available', $input['units']);
+
+        }
+
         return true;
     }
 
@@ -136,7 +159,29 @@ class GoodsReceivedInventoryService
             //increase the 
             $inventory->decrement('units_received', $item['units']);
             $inventory->decrement('units_available', $item['units']);
+        }
 
+        foreach ($data['inputs'] as $input)
+        {
+            if (!isset($input['inventory_tracking']))
+            {
+                if(is_numeric($input['item_id']))
+                {
+                    $input['inventory_tracking'] = optional(Item::find($input['item_id']))->inventory_tracking;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            if ($input['inventory_tracking'] == 0) continue;
+            
+            $inventory = self::record($data, $input);
+
+            //increase the 
+            $inventory->increment('units_received', $input['units']);
+            $inventory->increment('units_available', $input['units']);
         }
 
         return true;
