@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Rutatiina\GoodsReceived\Models\GoodsReceived;
 use Rutatiina\GoodsReceived\Models\GoodsReceivedSetting;
 use Rutatiina\GoodsReceived\Services\GoodsReceivedInventoryService;
-use Rutatiina\FinancialAccounting\Services\AccountBalanceUpdateService;
-use Rutatiina\FinancialAccounting\Services\ContactBalanceUpdateService;
 
 class GoodsReceivedService
 {
@@ -279,7 +277,7 @@ class GoodsReceivedService
 
         try
         {
-            $Txn = GoodsReceived::with('items')->findOrFail($id);
+            $Txn = GoodsReceived::with(['items', 'inputs'])->findOrFail($id);
 
             GoodsReceivedInventoryService::reverse($Txn->toArray());
 
@@ -325,7 +323,7 @@ class GoodsReceivedService
 
         try
         {
-            $Txn = GoodsReceived::with('items')->findOrFail($id);
+            $Txn = GoodsReceived::with(['items', 'inputs'])->findOrFail($id);
 
             GoodsReceivedInventoryService::reverse($Txn->toArray());
 
@@ -384,7 +382,7 @@ class GoodsReceivedService
         $taxes = Tax::all()->keyBy('code');
 
         $txn = GoodsReceived::findOrFail($id);
-        $txn->load('contact', 'items');
+        $txn->load('contact', 'items', 'inputs');
 
         $attributes = $txn->toArray();
 
