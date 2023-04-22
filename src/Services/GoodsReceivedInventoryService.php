@@ -81,6 +81,8 @@ class GoodsReceivedInventoryService
         if ($data['status'] != 'approved') return false; //can only update balances if status is approved
         $inventory_items = (isset($data['inventory_items'])) ? $data['inventory_items'] : $data['items'];
 
+        $dataInputs = (isset($data['inputs']) && is_array($data['inputs'])) ? $data['inputs'] : [];
+
         //Update the inventory summary
         foreach ($inventory_items as $item)
         {
@@ -106,7 +108,7 @@ class GoodsReceivedInventoryService
 
         }
 
-        foreach ($data['inputs'] as $input)
+        foreach ($dataInputs as $input)
         {
             if (!isset($input['inventory_tracking']))
             {
@@ -136,6 +138,8 @@ class GoodsReceivedInventoryService
     public static function reverse($data)
     {
         if ($data['status'] != 'approved') return false; //can only update balances if status is approved
+
+        $dataInputs = (isset($data['inputs']) && is_array($data['inputs'])) ? $data['inputs'] : [];
         
         //Update the inventory summary
         foreach ($data['items'] as $item)
@@ -161,7 +165,7 @@ class GoodsReceivedInventoryService
             $inventory->decrement('units_available', $item['units']);
         }
 
-        foreach ($data['inputs'] as $input)
+        foreach ($dataInputs as $input)
         {
             if (!isset($input['inventory_tracking']))
             {
