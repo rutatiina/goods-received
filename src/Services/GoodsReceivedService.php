@@ -22,13 +22,17 @@ class GoodsReceivedService
 
     public static function settings()
     {
-        return GoodsReceivedSetting::firstOrCreate([
-            'tenant_id' => session('tenant_id'),
-            'document_name' => 'Goods Received Note',
-            'document_type' => 'inventory',
-            //'debit_financial_account_code' => 130500, //Inventory
-            //'credit_financial_account_code' => 0,
-        ]);
+        return GoodsReceivedSetting::firstOrCreate(
+            ['tenant_id' => session('tenant_id')],
+            [
+                'tenant_id' => session('tenant_id'),
+                'document_name' => 'Goods Received Note',
+                'document_type' => 'inventory',
+                'minimum_number_length' => 5,
+                //'debit_financial_account_code' => 130500, //Inventory
+                //'credit_financial_account_code' => 0,
+            ]
+        );
     }
 
     public static function nextNumber()
