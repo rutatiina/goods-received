@@ -117,18 +117,11 @@ class GoodsReceivedValidateService
                 'expiry' => $requestInstance->input('items.'.$key.'.expiry', null),
                 'inventory_tracking' => ($itemModel->inventory_tracking ?? 0),
             ];
-
-            //DR ledger
-            $data['ledgers'][$financialAccountToDebit]['financial_account_code'] = $financialAccountToDebit;
-            $data['ledgers'][$financialAccountToDebit]['effect'] = 'debit';
-            $data['ledgers'][$financialAccountToDebit]['total'] = @$data['ledgers'][$financialAccountToDebit]['total'] + $item['total'];
-            $data['ledgers'][$financialAccountToDebit]['contact_id'] = $data['contact_id'];
-
         }
 
         //Formulate the DB ready inputs array
         $data['inputs'] = [];
-        foreach ($requestInstance->inputs as $key => $item)
+        foreach (($requestInstance->inputs ?? []) as $key => $item)
         {
             // $data['total'] += ($item['rate']*$item['quantity']);
 
@@ -156,29 +149,6 @@ class GoodsReceivedValidateService
                 'inventory_tracking' => ($itemModel->inventory_tracking ?? 0),
             ];
         }
-        
-        //CR ledger
-        $data['ledgers'][] = [
-            'financial_account_code' => $data['credit_financial_account_code'],
-            'effect' => 'credit',
-            'total' => $data['total'],
-            'contact_id' => $data['contact_id']
-        ];
-
-        //Now add the default values to items and ledgers
-
-        foreach ($data['ledgers'] as &$ledger)
-        {
-            $ledger['tenant_id'] = $data['tenant_id'];
-            $ledger['date'] = date('Y-m-d', strtotime($data['date']));
-            $ledger['base_currency'] = $data['base_currency'];
-            $ledger['quote_currency'] = $data['quote_currency'];
-            $ledger['exchange_rate'] = $data['exchange_rate'];
-        }
-        unset($ledger);
-
-        //If the credit_financial_account_code has not been set, clear the ledgers, there is no need for ledger entries
-        if (empty($data['credit_financial_account_code'])) $data['ledgers'] = [];
 
         //Return the array of txns
         //print_r($data); exit;

@@ -127,11 +127,10 @@ class GoodsReceivedService
             //Save the inputs >> $data['inputs']
             GoodsReceivedInputService::store($data);
 
-            //Save the ledgers >> $data['ledgers']; and update the balances
-            $Txn->ledgers()->createMany($data['ledgers']);
+            $Txn->refresh();
 
             //update the status of the txn
-            $Txn->status = (GoodsReceivedInventoryService::update($data)) ? 'approved' : 'draft';
+            $Txn->status = (GoodsReceivedInventoryService::update($Txn)) ? 'approved' : 'draft';
             $Txn->save();
 
             DB::connection('tenant')->commit();

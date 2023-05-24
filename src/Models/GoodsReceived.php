@@ -54,6 +54,7 @@ class GoodsReceived extends Model
     protected $appends = [
         'number_string',
         'total_in_words',
+        'ledgers'
     ];
 
     /**
@@ -179,9 +180,49 @@ class GoodsReceived extends Model
         return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedInput', 'goods_received_id')->orderBy('id', 'asc');
     }
 
-    public function ledgers()
+    public function getLedgersAttribute($txn = null)
     {
-        return $this->hasMany('Rutatiina\GoodsReceived\Models\GoodsReceivedLedger', 'goods_received_id')->orderBy('id', 'asc');
+        // if (!$txn) $this->items;
+
+        $txn = $txn ?? $this;
+
+        $txn = (is_object($txn)) ? $txn : collect($txn);
+
+        //If the credit_financial_account_code has not been set, clear the ledgers, there is no need for ledger entries
+        if (empty($txn->credit_financial_account_code)) return collect([]);
+        
+        $ledgers = [];
+
+        foreach ($txn->items as $item)
+        {
+            $taxable_amount = $item->taxable_amount ?? $item->total;
+
+            //DR ledger
+            $ledgers[$item->debit_financial_account_code]['financial_account_code'] = $item->debit_financial_account_code;
+            $ledgers[$item->debit_financial_account_code]['effect'] = 'debit';
+            $ledgers[$item->debit_financial_account_code]['total'] = ($ledgers[$item->debit_financial_account_code]['total'] ?? 0) + $taxable_amount;
+            $ledgers[$item->debit_financial_account_code]['contact_id'] = $txn->contact_id;
+        }
+
+        //CR ledger
+        $ledgers[] = [
+            'financial_account_code' => $txn->credit_financial_account_code,
+            'effect' => 'credit',
+            'total' => $txn->total,
+            'contact_id' => $txn->contact_id
+        ];
+
+        foreach ($ledgers as &$ledger)
+        {
+            $ledger['tenant_id'] = $txn->tenant_id;
+            $ledger['date'] = $txn->date;
+            $ledger['base_currency'] = $txn->base_currency;
+            $ledger['quote_currency'] = $txn->quote_currency;
+            $ledger['exchange_rate'] = $txn->exchange_rate;
+        }
+        unset($ledger);
+
+        return collect($ledgers);
     }
 
     public function comments()
